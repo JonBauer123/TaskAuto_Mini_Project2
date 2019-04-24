@@ -1,7 +1,7 @@
-from filter_packets import *
-from packet_parser import *
-from compute_metrics import *
+from filter_packets import filter
+from packet_parser import parse
+from compute_metrics import compute
 
 filter()
-parse()
-compute()
+packets, pings = parse()
+compute(packets, pings)
