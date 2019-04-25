@@ -1,7 +1,7 @@
 import struct
 import socket
 
-INPUT_PATH = "Node1_filtered.txt"
+INPUT_PATH = "Node{}_filtered.txt"
 PACKET_FORMAT = "!" + ("x" * 14) + "xxHxxxxBxxxLL" + "BxxHH"
 # length, ttl, source, dest, type, code, checksum, rest
 
@@ -25,41 +25,46 @@ class Ping:
         self.request = request
         self.reply = reply
 
-        # self.total_sent =
-        # self.total_received =
-        # self.payload_sent =
-        # self.payload_recevied =
-
     def __str__(self):
         return "({} / {}): {} -> {}".format(self.request.seq, self.reply.seq, self.request.src, self.request.dst)
 
 
+class Node:
+    def __init__(self, packets, pings):
+        self.packets = packets
+        self.pings = pings
+
+
 def parse():
-    unmatched_requests = {}
-    pings = []
-    packets = []
+    nodes = []
 
-    with open(INPUT_PATH) as f:
-        text = f.read()
-        packet_datas = text.split("\n\nNo.")
-        for packet_data in packet_datas:
-            if not packet_data:
-                continue
+    for i in range(1, 5):
+        unmatched_requests = {}
+        pings = []
+        packets = []
 
-            time = float(filter(None, packet_data.split("\n")[1].split(" "))[1])
-            trimmed_data = packet_data.split("\n")[3:]
-            trimmed_data = "".join(map(lambda x: x[6:53].replace(" ", ""), trimmed_data))
-            packet_bytes = bytearray.fromhex(trimmed_data)
-            packet = Packet(packet_bytes, time)
+        with open(INPUT_PATH.format(i)) as f:
+            text = f.read()
+            packet_datas = text.split("\n\nNo.")
+            for packet_data in packet_datas:
+                if not packet_data:
+                    continue
 
-            if packet.type == "request":
-                unmatched_requests[packet.seq] = packet
-            else:
-                pings.append(Ping(unmatched_requests[packet.seq], packet))
+                time = float(filter(None, packet_data.split("\n")[1].split(" "))[1])
+                trimmed_data = packet_data.split("\n")[3:]
+                trimmed_data = "".join(map(lambda x: x[6:53].replace(" ", ""), trimmed_data))
+                packet_bytes = bytearray.fromhex(trimmed_data)
+                packet = Packet(packet_bytes, time)
 
-            packets.append(packet)
+                if packet.type == "request":
+                    unmatched_requests[packet.seq] = packet
+                else:
+                    pings.append(Ping(unmatched_requests[packet.seq], packet))
 
-    return packets, pings
+                packets.append(packet)
+        nodes.append(Node(packets, pings))
+
+    return nodes
 
 if __name__ == '__main__':
     parse()

@@ -3,5 +3,6 @@ from packet_parser import parse
 from compute_metrics import compute
 
 filter()
-packets, pings = parse()
-compute(packets, pings)
+node_data = parse()
+compute(node_data)
+compute_b(node_data)

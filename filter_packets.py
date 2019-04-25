@@ -26,12 +26,12 @@ def writeFilter(fd, L):
 
 def filter():
     for i in range(1, 5):
-        # inFile = "Node" + str(i) + ".txt"
-        inFile = "Node1.txt"
+        inFile = "Node" + str(i) + ".txt"
+        # inFile = "Node1.txt"
         L = []
         readFile(inFile, L)
-        # outFile = "Node" + str(i) + "_filtered.txt"
-        outFile = "Node1_filtered.txt"
+        outFile = "Node" + str(i) + "_filtered.txt"
+        # outFile = "Node1_filtered.txt"
         writeFilter(outFile, L)
 
 
