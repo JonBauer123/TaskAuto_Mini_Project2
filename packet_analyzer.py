@@ -5,4 +5,4 @@ from compute_metrics import compute
 filter()
 node_data = parse()
 compute(node_data)
-compute_b(node_data)
+#compute_b(node_data)
