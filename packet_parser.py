@@ -7,17 +7,28 @@ PACKET_FORMAT = "!" + ("x" * 14) + "xxHxxxxBxxxLL" + "BxxHH"
 
 
 class Packet:
-    def __init__(self, bytes, time):
+    def __init__(self, bytes, id, time):
         length, ttl, src, dst, type, ident, seq = struct.unpack(PACKET_FORMAT, str(bytes[:struct.calcsize(PACKET_FORMAT)]))
         self.src = socket.inet_ntoa(struct.pack('!L', src))
         self.dst = socket.inet_ntoa(struct.pack('!L', dst))
         self.seq = "{}/{}".format(ident, seq)
         self.ttl = ttl
-        self.type = "request" if type == 8 else "reply"
+
+        if type == 8:
+            self.type = "request"
+        elif type == 0:
+            self.type = "reply"
+        else:
+            raise Exception()
+
         self.time = time
+        self.id = id
+
+        self.total_length = len(bytes)
+        self.content_length = len(bytes) - 42
 
     def __str__(self):
-        return "{}: {} -> {}".format(self.seq, self.src, self.dst)
+        return "{}: {} -> {}".format(self.id, self.src, self.dst)
 
 
 class Ping:
@@ -26,7 +37,7 @@ class Ping:
         self.reply = reply
 
     def __str__(self):
-        return "({} / {}): {} -> {}".format(self.request.seq, self.reply.seq, self.request.src, self.request.dst)
+        return "({} / ()): {} -> {}".format(self.request.id, self.reply.id, self.request.src, self.request.dst)
 
 
 class Node:
@@ -50,11 +61,12 @@ def parse():
                 if not packet_data:
                     continue
 
-                time = float(filter(None, packet_data.split("\n")[1].split(" "))[1])
+                id, time = filter(None, packet_data.split("\n")[1].split(" "))[:2]
+
                 trimmed_data = packet_data.split("\n")[3:]
                 trimmed_data = "".join(map(lambda x: x[6:53].replace(" ", ""), trimmed_data))
                 packet_bytes = bytearray.fromhex(trimmed_data)
-                packet = Packet(packet_bytes, time)
+                packet = Packet(packet_bytes, int(id), float(time))
 
                 if packet.type == "request":
                     unmatched_requests[packet.seq] = packet
