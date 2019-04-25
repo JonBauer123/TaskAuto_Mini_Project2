@@ -7,13 +7,14 @@ PACKET_FORMAT = "!" + ("x" * 14) + "xxHxxxxBxxxLL" + "BxxHH"
 
 
 class Packet:
-    def __init__(self, bytes):
+    def __init__(self, bytes, time):
         length, ttl, src, dst, type, ident, seq = struct.unpack(PACKET_FORMAT, str(bytes[:struct.calcsize(PACKET_FORMAT)]))
         self.src = socket.inet_ntoa(struct.pack('!L', src))
         self.dst = socket.inet_ntoa(struct.pack('!L', dst))
         self.seq = "{}/{}".format(ident, seq)
         self.ttl = ttl
         self.type = "request" if type == 8 else "reply"
+        self.time = time
 
     def __str__(self):
         return "{}: {} -> {}".format(self.seq, self.src, self.dst)
@@ -45,10 +46,11 @@ def parse():
             if not packet_data:
                 continue
 
+            time = float(filter(None, packet_data.split("\n")[1].split(" "))[1])
             trimmed_data = packet_data.split("\n")[3:]
             trimmed_data = "".join(map(lambda x: x[6:53].replace(" ", ""), trimmed_data))
             packet_bytes = bytearray.fromhex(trimmed_data)
-            packet = Packet(packet_bytes)
+            packet = Packet(packet_bytes, time)
 
             if packet.type == "request":
                 unmatched_requests[packet.seq] = packet
