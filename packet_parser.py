@@ -41,9 +41,10 @@ class Ping:
 
 
 class Node:
-    def __init__(self, packets, pings):
+    def __init__(self, packets, pings, id):
         self.packets = packets
         self.pings = pings
+        self.id = id
 
 
 def parse():
@@ -74,7 +75,7 @@ def parse():
                     pings.append(Ping(unmatched_requests[packet.seq], packet))
 
                 packets.append(packet)
-        nodes.append(Node(packets, pings))
+        nodes.append(Node(packets, pings, i))
 
     return nodes
 
